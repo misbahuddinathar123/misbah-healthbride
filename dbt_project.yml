@@ -18,6 +18,7 @@ vars:
 models:
   healthbridge:
     +materialized: table
+    +database: HEALTHBRIDGE_DB    # always build into HEALTHBRIDGE_DB, whatever database the connection defaults to
     staging:
       +schema: CURATED
     marts:
@@ -25,6 +26,7 @@ models:
 
 seeds:
   healthbridge:
+    +database: HEALTHBRIDGE_DB
     +schema: CURATED
     county_region_mapping:
       +column_types:
