@@ -1,0 +1,7 @@
+denial_reason,denial_category,is_appealable
+Missing prior authorization,Authorization,true
+Duplicate claim,Administrative,false
+Non-covered service,Coverage,false
+Timely filing exceeded,Administrative,true
+Out of network provider,Network,true
+Medical necessity not established,Clinical,true

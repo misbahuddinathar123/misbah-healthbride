@@ -1,0 +1,31 @@
+name: 'healthbridge'
+version: '1.0.0'
+config-version: 2
+profile: 'default'          # ignored by dbt platform (the connection is set in the platform); needed by dbt Core
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  reference_year: 2026      # year used to derive age_years (age comes from the YEAR of birth only)
+
+# T-18: where things are built. Everything is a table.
+#   models/staging -> CURATED, models/marts -> ANALYTICS, seeds -> CURATED
+# The generate_schema_name macro makes these names exact (no combined names such as DBT_USER_CURATED).
+models:
+  healthbridge:
+    +materialized: table
+    staging:
+      +schema: CURATED
+    marts:
+      +schema: ANALYTICS
+
+seeds:
+  healthbridge:
+    +schema: CURATED
+    county_region_mapping:
+      +column_types:
+        county_fips: varchar(5)   # keeps leading zeros (04013); otherwise dbt would load it as a number

@@ -1,0 +1,20 @@
+drug_class,therapeutic_area
+ACE Inhibitor,Cardiovascular
+ARB,Cardiovascular
+ARNI,Cardiovascular
+Anticholinergic,Respiratory
+Beta Blocker,Cardiovascular
+Biguanide,Diabetes
+Bronchodilator,Respiratory
+Calcium Channel Blocker,Cardiovascular
+DPP-4 Inhibitor,Diabetes
+Diuretic,Cardiovascular
+ESA,Renal
+Inhaled Corticosteroid/LABA,Respiratory
+Insulin,Diabetes
+Loop Diuretic,Cardiovascular
+Phosphate Binder,Renal
+SSRI,Mental Health
+Statin,Cardiovascular
+Sulfonylurea,Diabetes
+Vitamin D Analog,Renal

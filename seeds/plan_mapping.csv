@@ -1,0 +1,4 @@
+plan_id,plan_tier,plan_category,tier_rank
+HBP-001,Gold,Premium,1
+HBP-002,Silver,Standard,2
+HBP-003,Basic,Essential,3

@@ -1,0 +1,79 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Bronze layer: the eight HealthBridge source tables loaded from CSV files into HEALTHBRIDGE_DB.RAW. Never changed by dbt."
+    database: HEALTHBRIDGE_DB
+    schema: RAW
+    tables:
+      - name: members
+        description: "Medicare Advantage member enrollment: demographics, plan, risk score, chronic conditions (contains PHI: last name and date of birth are masked for roles not approved to see them)."
+        columns:
+          - name: member_id
+            description: "Primary key of MEMBERS."
+            data_tests:
+              - unique
+              - not_null
+      - name: providers
+        description: "Physician and facility directory: specialty, network status, star rating."
+        columns:
+          - name: npi
+            description: "Primary key of PROVIDERS."
+            data_tests:
+              - unique
+              - not_null
+      - name: claims
+        description: "Medical claims (inpatient, outpatient, professional): the primary financial dataset."
+        columns:
+          - name: claim_id
+            description: "Primary key of CLAIMS."
+            data_tests:
+              - unique
+              - not_null
+          - name: member_id
+            description: "Member who the claim belongs to (links to MEMBERS)."
+            data_tests:
+              - relationships:
+                  arguments:
+                    to: source('raw', 'members')
+                    field: member_id
+      - name: pharmacy_claims
+        description: "Prescription drug claims: formulary status, generic availability."
+        columns:
+          - name: rx_claim_id
+            description: "Primary key of PHARMACY_CLAIMS."
+            data_tests:
+              - unique
+              - not_null
+      - name: authorizations
+        description: "Prior authorization requests: status, denial reason, clinical notes."
+        columns:
+          - name: auth_id
+            description: "Primary key of AUTHORIZATIONS."
+            data_tests:
+              - unique
+              - not_null
+      - name: quality_measures
+        description: "HEDIS / Stars measure results: care gap flags per member per measure."
+        columns:
+          - name: measure_id
+            description: "Primary key of QUALITY_MEASURES."
+            data_tests:
+              - unique
+              - not_null
+      - name: grievances
+        description: "Member complaints and appeals: category, free-text description, resolution."
+        columns:
+          - name: grievance_id
+            description: "Primary key of GRIEVANCES."
+            data_tests:
+              - unique
+              - not_null
+      - name: call_center_notes
+        description: "Agent interaction notes: free text used for Cortex Search and Cortex Analyst. SENTIMENT and SUMMARY are empty."
+        columns:
+          - name: note_id
+            description: "Primary key of CALL_CENTER_NOTES."
+            data_tests:
+              - unique
+              - not_null

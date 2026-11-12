@@ -1,0 +1,55 @@
+version: 2
+
+models:
+  - name: mart_member_360
+    description: "Member 360: one row per member combining plan, claims, pharmacy, quality, grievance and call-centre information, plus the needs_care_outreach flag."
+    columns:
+      - name: member_id
+        description: "Unique member identifier (primary key)."
+        data_tests:
+          - unique
+          - not_null
+      - name: risk_tier
+        description: '{{ doc("risk_tier") }}'
+      - name: total_paid
+        description: "Total amount paid on the member's medical claims, in US dollars."
+      - name: rx_paid
+        description: "Total amount paid on the member's pharmacy claims, in US dollars."
+      - name: open_care_gaps
+        description: "Number of open care gaps for the member."
+      - name: needs_care_outreach
+        description: '{{ doc("needs_care_outreach") }}'
+
+  - name: mart_claims_monthly
+    description: "Monthly claims: one row per service month and claim type with counts, amounts and denial rate."
+    columns:
+      - name: service_month
+        description: "First day of the service month."
+        data_tests:
+          - not_null
+      - name: claim_type
+        description: "Claim type: INPATIENT, OUTPATIENT or PROFESSIONAL."
+        data_tests:
+          - not_null
+      - name: paid_amount
+        description: "Total paid amount for the month and claim type, in US dollars."
+
+  - name: mart_care_gap_summary
+    description: "Care gap summary: one row per quality measure with eligible members, measures met, open gaps and closure rate."
+    columns:
+      - name: measure_code
+        description: "Short code of the quality measure (primary key), for example BCS."
+        data_tests:
+          - unique
+          - not_null
+      - name: closure_rate_pct
+        description: "Percentage of eligible members whose care gap is closed (numerator met)."
+
+  - name: mart_provider_scorecard
+    description: "Provider scorecard: one row per provider with claim count, distinct members, paid amount and denial rate. Providers without claims show zeros."
+    columns:
+      - name: npi
+        description: "National Provider Identifier (primary key)."
+        data_tests:
+          - unique
+          - not_null

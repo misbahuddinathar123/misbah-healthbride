@@ -1,0 +1,122 @@
+version: 2
+
+models:
+  - name: dim_member
+    description: "Member dimension: one row per member with plan tier and category, region and county FIPS (from the seeds), age band, risk tier and the primary care provider. Contains no PHI."
+    columns:
+      - name: member_id
+        description: "Unique member identifier (primary key)."
+        data_tests:
+          - unique
+          - not_null
+      - name: plan_id
+        description: "Plan identifier. Checked against the plan_mapping seed so a new plan that is missing from the mapping is noticed."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('plan_mapping')
+                field: plan_id
+      - name: county
+        description: "County where the member lives. Checked against the county_region_mapping seed."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('county_region_mapping')
+                field: county
+      - name: plan_tier
+        description: "Plan tier from the plan_mapping seed: Gold, Silver or Basic."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Gold', 'Silver', 'Basic']
+      - name: risk_tier
+        description: '{{ doc("risk_tier") }}'
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['High', 'Medium', 'Low']
+
+  - name: dim_provider
+    description: "Provider dimension: one row per provider with a rating band (Excellent, Good, Fair, Poor)."
+    columns:
+      - name: npi
+        description: "National Provider Identifier (primary key)."
+        data_tests:
+          - unique
+          - not_null
+
+  - name: fct_claims
+    description: "Claims fact: one row per medical claim with denial category, appeal flag, amounts and the status of the linked authorization."
+    columns:
+      - name: claim_id
+        description: "Unique claim identifier (primary key)."
+        data_tests:
+          - unique
+          - not_null
+      - name: member_id
+        description: "Member the claim belongs to (links to dim_member)."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_member')
+                field: member_id
+      - name: npi
+        description: "Provider who billed the claim (links to dim_provider)."
+        data_tests:
+          # Severity WARN instead of error: a warning is the right level when the problem should be seen and fixed
+          # but must not stop the whole build. A claim whose provider is missing from the provider directory (for
+          # example a new provider not yet loaded, since the directory is refreshed only quarterly) is a data-freshness
+          # issue, not proof that the model logic is broken, so it should raise a visible warning rather than block
+          # every downstream mart and report.
+          - relationships:
+              arguments:
+                to: ref('dim_provider')
+                field: npi
+              config:
+                severity: warn
+      - name: denial_reason
+        description: "Reason the claim was denied (empty when not denied). Checked against the denial_reason_mapping seed."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('denial_reason_mapping')
+                field: denial_reason
+
+  - name: fct_pharmacy_claims
+    description: "Pharmacy claims fact: one row per prescription fill with therapeutic area and formulary flags."
+    columns:
+      - name: rx_claim_id
+        description: "Unique prescription claim identifier (primary key)."
+        data_tests:
+          - unique
+          - not_null
+      - name: member_id
+        description: "Member the fill belongs to (links to dim_member)."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_member')
+                field: member_id
+      - name: drug_class
+        description: "Drug class. Checked against the drug_class_mapping seed."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('drug_class_mapping')
+                field: drug_class
+
+  - name: fct_quality_measures
+    description: "Quality measures fact: one row per member and HEDIS/Stars measure with eligibility, numerator and open care gap flags."
+    columns:
+      - name: measure_id
+        description: "Unique identifier of a member and measure result (primary key)."
+        data_tests:
+          - unique
+          - not_null
+      - name: member_id
+        description: "Member the result belongs to (links to dim_member)."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_member')
+                field: member_id

@@ -1,0 +1,70 @@
+version: 2
+
+seeds:
+  - name: plan_mapping
+    description: "Maps each plan_id (HBP-001, HBP-002, HBP-003) to its plan tier, plan category and tier rank. Used by dim_member."
+    columns:
+      - name: plan_id
+        description: "Plan identifier as used in the MEMBERS table (key of this seed)."
+        data_tests:
+          - unique
+          - not_null
+      - name: plan_tier
+        description: "Plan tier: Gold, Silver or Basic."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Gold', 'Silver', 'Basic']
+      - name: plan_category
+        description: "Plan category (Premium, Standard, Essential)."
+      - name: tier_rank
+        description: "Numeric rank of the tier (1 = Gold)."
+
+  - name: county_region_mapping
+    description: "Maps each Arizona county to its region and county FIPS code. Used by dim_member."
+    columns:
+      - name: county
+        description: "County name as used in the MEMBERS table (key of this seed)."
+        data_tests:
+          - unique
+          - not_null
+      - name: region
+        description: "Region: Central, Southern, Northern or Western."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Central', 'Southern', 'Northern', 'Western']
+      - name: county_fips
+        description: "5-character county FIPS code (kept as text to preserve leading zeros)."
+
+  - name: denial_reason_mapping
+    description: "Classifies each claim denial reason into a denial category and says whether it can be appealed. Used by fct_claims."
+    columns:
+      - name: denial_reason
+        description: "Denial reason text as used in the CLAIMS table (key of this seed)."
+        data_tests:
+          - unique
+          - not_null
+      - name: denial_category
+        description: "Denial category: Authorization, Administrative, Coverage, Network or Clinical."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Authorization', 'Administrative', 'Coverage', 'Network', 'Clinical']
+      - name: is_appealable
+        description: "TRUE when a denial of this reason can be appealed."
+
+  - name: drug_class_mapping
+    description: "Maps each drug class to its therapeutic area. Used by fct_pharmacy_claims."
+    columns:
+      - name: drug_class
+        description: "Drug class as used in the PHARMACY_CLAIMS table (key of this seed)."
+        data_tests:
+          - unique
+          - not_null
+      - name: therapeutic_area
+        description: "Therapeutic area: Cardiovascular, Diabetes, Respiratory, Renal or Mental Health."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Cardiovascular', 'Diabetes', 'Respiratory', 'Renal', 'Mental Health']

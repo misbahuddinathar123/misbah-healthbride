@@ -1,0 +1,113 @@
+version: 2
+
+models:
+  - name: stg_members
+    description: "Staging model for members: one row per member with plan, location, enrollment, risk score and chronic-condition flags. Contains NO PHI (no name, no date of birth)."
+    columns:
+      - name: member_id
+        description: "Unique member identifier."
+        data_tests:
+          - unique
+          - not_null
+      - name: gender
+        description: "Standardised gender: M, F or U (anything else becomes U)."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['M', 'F', 'U']
+      - name: pcp_npi
+        description: "NPI of the member's primary care provider."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_providers')
+                field: npi
+      - name: age_years
+        description: "Age in years, derived as reference_year minus the year of birth."
+  - name: stg_providers
+    description: "Staging model for providers: one row per provider with a true/false in-network flag."
+    columns:
+      - name: npi
+        description: "National Provider Identifier (unique per provider)."
+        data_tests:
+          - unique
+          - not_null
+  - name: stg_claims
+    description: "Staging model for medical claims: one row per claim_id (duplicates removed, latest load wins) with denial flag, month and length of stay."
+    columns:
+      - name: claim_id
+        description: "Unique claim identifier."
+        data_tests:
+          - unique
+          - not_null
+      - name: claim_type
+        description: "Claim type in upper case."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['INPATIENT', 'OUTPATIENT', 'PROFESSIONAL']
+      - name: claim_status
+        description: "Claim status in upper case."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['PAID', 'DENIED', 'PENDING', 'ADJUSTED']
+      - name: member_id
+        description: "Member the claim belongs to."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_members')
+                field: member_id
+  - name: stg_pharmacy_claims
+    description: "Staging model for pharmacy claims: one row per prescription fill (duplicates removed) with formulary flags and paid per day."
+    columns:
+      - name: rx_claim_id
+        description: "Unique prescription claim identifier."
+        data_tests:
+          - unique
+          - not_null
+      - name: formulary_status
+        description: "Formulary status in upper case."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['ON_FORMULARY', 'PRIOR_AUTH', 'OFF_FORMULARY']
+  - name: stg_authorizations
+    description: "Staging model for prior authorizations: one row per request with turnaround days and denied/open flags."
+    columns:
+      - name: auth_id
+        description: "Unique authorization identifier."
+        data_tests:
+          - unique
+          - not_null
+      - name: auth_status
+        description: "Authorization status in upper case."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['APPROVED', 'DENIED', 'PENDING', 'APPEALED']
+  - name: stg_quality_measures
+    description: "Staging model for HEDIS/Stars quality measure results: one row per member and measure."
+    columns:
+      - name: measure_id
+        description: "Unique identifier of a member and measure result."
+        data_tests:
+          - unique
+          - not_null
+  - name: stg_grievances
+    description: "Staging model for member grievances and appeals with open/escalated flags and days to resolve."
+    columns:
+      - name: grievance_id
+        description: "Unique grievance identifier."
+        data_tests:
+          - unique
+          - not_null
+  - name: stg_call_center_notes
+    description: "Staging model for call centre notes with a long-call flag and note length (sentiment and summary are not carried: they are empty)."
+    columns:
+      - name: note_id
+        description: "Unique call note identifier."
+        data_tests:
+          - unique
+          - not_null
